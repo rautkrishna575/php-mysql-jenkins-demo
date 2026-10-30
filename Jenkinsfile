@@ -23,13 +23,19 @@ pipeline {
 
         stage('PHP Syntax Check') {
             steps {
-                sh '''
-                    docker run --rm \
-                    -v "$WORKSPACE:/app" \
-                    -w /app \
-                    php:8.3-cli \
-                    sh -c 'find src -name "*.php" -exec php -l {} \\;'
-                '''
+                dir(env.WORKSPACE) {
+                    sh '''
+                        echo "Checking project directory:"
+                        pwd
+                        ls -la
+
+                        docker run --rm \
+                        -v "$WORKSPACE:/app" \
+                        -w /app \
+                        php:8.3-cli \
+                        sh -c 'find src -name "*.php" -exec php -l {} \\;'
+                    '''
+                }
             }
         }
     //register.php file is added to the project and tested in the pipeline. it checks the syntax of the register.php file and runs it to ensure that it works correctly. This is important for ensuring that the registration functionality of the application is working as expected.
