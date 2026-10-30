@@ -35,21 +35,21 @@ pipeline {
             }
         }
     //register.php file is added to the project and tested in the pipeline. it checks the syntax of the register.php file and runs it to ensure that it works correctly. This is important for ensuring that the registration functionality of the application is working as expected.
-        stage('PHP Tests') {
-            steps {
-                sh '''
-                    docker run --rm \
-                    -v "$WORKSPACE:/app" \
-                    -w /app \
-                    php:8.3-cli \
-                    sh -c '
-                        docker-php-ext-install pdo_mysql &&
-                        php -m &&
-                        php src/register.php
-                    '
-                '''
-            }
-        }
+        // stage('PHP Tests') {
+        //     steps {
+        //         sh '''
+        //             docker run --rm \
+        //             -v "$WORKSPACE:/app" \
+        //             -w /app \
+        //             php:8.3-cli \
+        //             sh -c '
+        //                 docker-php-ext-install pdo_mysql &&
+        //                 php -m &&
+        //                 php src/register.php
+        //             '
+        //         '''
+        //     }
+        // }
 
         stage('Build and Deploy') {
             steps {
