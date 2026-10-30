@@ -2,7 +2,6 @@
 pipeline {
     agent any
 
-    // Check GitHub for changes approximately every minute
     triggers {
         pollSCM('H/1 * * * *')
     }
@@ -22,6 +21,30 @@ pipeline {
             }
         }
 
+        stage('PHP Syntax Check') {
+            steps {
+                sh '''
+                    docker run --rm \
+                    -v "$WORKSPACE:/app" \
+                    -w /app \
+                    php:8.3-cli \
+                    sh -c 'find src -name "*.php" -exec php -l {} \\;'
+                '''
+            }
+        }
+    //register.php file is added to the project and tested in the pipeline. it checks the syntax of the register.php file and runs it to ensure that it works correctly. This is important for ensuring that the registration functionality of the application is working as expected.
+        stage('PHP Tests') {
+            steps {
+                sh '''
+                    docker run --rm \
+                    -v "$WORKSPACE:/app" \
+                    -w /app \
+                    php:8.3-cli \
+                    php src/register.php
+                '''
+            }
+        }
+
         stage('Build and Deploy') {
             steps {
                 sh 'docker compose up -d --build'
@@ -37,12 +60,12 @@ pipeline {
 
     post {
         success {
-            echo 'Application deployed successfully!'
+            echo 'PHP tests passed and application deployed successfully!'
             echo 'Open http://localhost:8081'
         }
 
         failure {
-            echo 'Deployment failed. Check Console Output.'
+            echo 'Pipeline failed. Check Console Output.'
         }
     }
 }
