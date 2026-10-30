@@ -42,7 +42,11 @@ pipeline {
                     -v "$WORKSPACE:/app" \
                     -w /app \
                     php:8.3-cli \
-                    php src/register.php
+                    sh -c '
+                        docker-php-ext-install pdo_mysql &&
+                        php -m &&
+                        php src/register.php
+                    '
                 '''
             }
         }
