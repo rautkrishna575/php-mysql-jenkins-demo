@@ -67,6 +67,8 @@ $visitors = $pdo->query(
     <p>MySQL connection: successful</p>
 
     click here to login <a href="login.php">Login</a>
+    <br>
+    click here to register <a href="register.php">Register</a>
 
     <h2>Visitors</h2>
     <table>
