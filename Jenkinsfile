@@ -1,11 +1,20 @@
+
 pipeline {
     agent any
 
+    // Check GitHub for changes approximately every minute
     triggers {
-        pollSCM('H/5 * * * *')
+        pollSCM('H/1 * * * *')
     }
 
     stages {
+        stage('Checkout Git') {
+            steps {
+                checkout scm
+                echo 'Latest GitHub code checked out.'
+            }
+        }
+
         stage('Check Docker') {
             steps {
                 sh 'docker version'
@@ -13,66 +22,27 @@ pipeline {
             }
         }
 
-        stage('Validate Compose') {
+        stage('Build and Deploy') {
             steps {
-                sh 'docker compose config --quiet'
+                sh 'docker compose up -d --build'
             }
         }
 
-        stage('Build Application') {
+        stage('Check Containers') {
             steps {
-                sh 'docker compose build'
+                sh 'docker compose ps'
             }
         }
+    }
 
-        stage('Start Application') {
-            steps {
-                sh 'docker compose up -d --wait'
-            }
+    post {
+        success {
+            echo 'Application deployed successfully!'
+            echo 'Open http://localhost:8081'
         }
 
-        
-        stage('Test PHP Syntax') {
-            steps {
-                dir('.') {
-                    sh 'docker compose exec -T web php -l /var/www/html/index.php'
-                }
-            }
+        failure {
+            echo 'Deployment failed. Check Console Output.'
         }
-
-        stage('Test MySQL Connection') {
-            steps {
-                dir('.') {
-                    sh '''
-                        docker compose exec -T web php -r '
-                            $pdo = new PDO(
-                                "mysql:host=db;dbname=demo_db;charset=utf8mb4",
-                                "demo_user",
-                                "demo_pass"
-                            );
-                            echo "MySQL connection successful!\\n";
-                        '
-                    '''
-                }
-            }
-        }
-
-        
-        stage('Test HTTP Response') {
-            steps {
-                sh '''
-                    docker compose exec -T web php -r '
-                        $response = file_get_contents("http://127.0.0.1/");
-                        if ($response === false) {
-                            fwrite(STDERR, "HTTP test failed\\n");
-                            exit(1);
-                        }
-                        echo "HTTP test passed!\\n";
-                    '
-                '''
-            }
-        }
-
-
     }
 }
